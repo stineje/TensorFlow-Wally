@@ -1,0 +1,110 @@
+Wally TensorFlow Cross-Compilation Instructions
+
+1. Clone tensorflow v2.5.0 branch and cd into tflite directory
+```
+git clone -b v2.5.0 https://github.com/tensorflow/tensorflow.git
+cd tensorflow/tensorflow/lite/tools/make/
+```
+
+2. Download external dependencies
+`./download_dependencies.sh`
+
+3. Change `targets/riscv_makefile.inc` for wally buildroot toolchain
+
+4. Build TensorFlow Lite libraries + Linux executables
+`./build_riscv_lib.sh`
+
+5. The build process should create a `gen/linux_riscv64/bin` with a Linux executable named `benchmark_model`.
+
+6. Copy `benchmark_model` and tflite models over to SD card filesystem accessible to Linux.
+
+7. Execute the benchmark model with the following parameters
+`./benchmark_model --num_threads=1 --num_runs=5 --max_secs=50000 --graph=<path-to-model>`
+./benchmark_model --num_threads=1 --num_runs=5 --max_secs=50000 --graph=models/float/mobilenet_v2_1.0_224_float.tflite
+
+# ./benchmark_model --num_threads=1 --num_runs=5 --max_secs=50000 --graph=models/float/mobilenet_v2_1.0_224_float.tflite
+STARTING!
+[  288.220204] random: crng init done
+Log parameter values verbosely: [0]
+Min num runs: [5]
+Max runs duration (seconds): [50000]
+Num threads: [1]
+Graph: [models/float/mobilenet_v2_1.0_224_float.tflite]
+Loaded model models/float/mobilenet_v2_1.0_224_float.tflite
+The input model file size (MB): 13.9879
+Initialized session in 1851.56ms.
+Running benchmark for at least 1 iterations and at least 0.5 seconds but terminate if exceeding 50000 seconds.
+count=1 curr=111582348
+
+Running benchmark for at least 5 iterations and at least 1 seconds but terminate if exceeding 50000 seconds.
+count=5 first=108603062 curr=108678510 min=108573274 max=108678510 avg=1.08605e+08 std=37764
+
+Inference timings in us: Init: 1851556, First inference: 111582348, Warmup (avg): 1.11582e+08, Inference (avg): 1.08605e+08
+Note: as the benchmark tool itself affects memory footprint, the following is only APPROXIMATE to the actual memory footprint of the model at runtime. Take the information at your discretion.
+Peak memory footprint (MB): init=3.86328 overall=26.6641
+
+# ./benchmark_model --num_threads=1 --num_runs=5 --max_secs=50000 --graph=models/float/resnet_50_imagenet_float.tflite 
+STARTING!
+Log parameter values verbosely: [0]
+Min num runs: [5]
+Max runs duration (seconds): [50000]
+Num threads: [1]
+Graph: [models/float/resnet_50_imagenet_float.tflite]
+Loaded model models/float/resnet_50_imagenet_float.tflite
+The input model file size (MB): 102.162
+Initialized session in 2276.38ms.
+Running benchmark for at least 1 iterations and at least 0.5 seconds but terminate if exceeding 50000 seconds.
+count=1 curr=1010471798
+
+Running benchmark for at least 5 iterations and at least 1 seconds but terminate if exceeding 50000 seconds.
+
+
+count=5 first=985678536 curr=985355793 min=985166486 max=985678536 avg=9.85454e+08 std=188363
+
+Inference timings in us: Init: 2276384, First inference: 1010471798, Warmup (avg): 1.01047e+09, Inference (avg): 9.85454e+08
+Note: as the benchmark tool itself affects memory footprint, the following is only APPROXIMATE to the actual memory footprint of the model at runtime. Take the information at your discretion.
+Peak memory footprint (MB): init=5.37109 overall=118.059
+
+# ./benchmark_model --num_threads=1 --num_runs=5 --max_secs=50000 --graph=models/quant/tf2_mobilenet_v2_1.0_224_ptq.tflite
+STARTING!
+Log parameter values verbosely: [0]
+Min num runs: [5]
+Max runs duration (seconds): [50000]
+Num threads: [1]
+Graph: [models/quant/tf2_mobilenet_v2_1.0_224_ptq.tflite]
+Loaded model models/quant/tf2_mobilenet_v2_1.0_224_ptq.tflite
+The input model file size (MB): 4.07017
+Initialized session in 1620.71ms.
+Running benchmark for at least 1 iterations and at least 0.5 seconds but terminate if exceeding 50000 seconds.
+count=1 curr=392043778
+
+Running benchmark for at least 5 iterations and at least 1 seconds but terminate if exceeding 50000 seconds.
+count=5 first=390911503 curr=390629925 min=390396566 max=390911503 avg=3.9063e+08 std=169189
+
+Inference timings in us: Init: 1620709, First inference: 392043778, Warmup (avg): 3.92044e+08, Inference (avg): 3.9063e+08
+Note: as the benchmark tool itself affects memory footprint, the following is only APPROXIMATE to the actual memory footprint of the model at runtime. Take the information at your discretion.
+Peak memory footprint (MB): init=4.21875 overall=9.97656
+
+# ./benchmark_model --num_threads=1 --num_runs=5 --max_secs=50000 --graph=models/quant/tf2_mobilenet_v2_1.0_224_ptq.tflite
+# ls models/quant 
+tf2_mobilenet_v2_1.0_224_ptq.tflite
+tfhub_tf2_resnet_50_imagenet_ptq.tflite
+# ./benchmark_model --num_threads=1 --num_runs=5 --max_secs=50000 --graph=models/quant/tfhub_tf2_resnet_50_imagenet_ptq.tflite
+STARTING!
+Log parameter values verbosely: [0]
+Min num runs: [5]
+Max runs duration (seconds): [50000]
+Num threads: [1]
+Graph: [models/quant/tfhub_tf2_resnet_50_imagenet_ptq.tflite]
+Loaded model models/quant/tfhub_tf2_resnet_50_imagenet_ptq.tflite
+The input model file size (MB): 26.3086
+Initialized session in 2844.59ms.
+Running benchmark for at least 1 iterations and at least 0.5 seconds but terminate if exceeding 50000 seconds.
+count=1 curr=4829910587
+
+Running benchmark for at least 5 iterations and at least 1 seconds but terminate if exceeding 50000 seconds.
+count=5 first=4817599407 curr=4817255830 min=4816031098 max=4817599407 avg=4.81695e+09 std=547734
+
+Inference timings in us: Init: 2844591, First inference: 4829910587, Warmup (avg): 4.82991e+09, Inference (avg): 4.81695e+09
+Note: as the benchmark tool itself affects memory footprint, the following is only APPROXIMATE to the actual memory footprint of the model at runtime. Take the information at your discretion.
+Peak memory footprint (MB): init=6.24219 overall=34.0625
